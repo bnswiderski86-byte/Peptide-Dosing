@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peptide Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1c1917;
+  --ink2: #57534e;
+  --ink3: #a8a29e;
+  --paper: #faf9f7;
+  --surface: #ffffff;
+  --border: rgba(28,25,23,0.08);
+  --border2: rgba(28,25,23,0.15);
+  --accent: #2d6a4f;
+  --accent-light: #d8f3dc;
+  --accent-text: #1b4332;
+  --warn: #b45309;
+  --warn-light: #fef3c7;
+  --warn-text: #78350f;
+  --danger: #be123c;
+  --danger-light: #fce7f3;
+  --danger-text: #881337;
+  --r: 10px;
+  --r-lg: 16px;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.header {
+  background: var(--ink);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.header-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 0 1.25rem;
+  margin-bottom: 8px;
+}
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 1.25rem;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s;
+  gap: 1px;
+}
+.nav-btn:hover { background: var(--paper); }
+.nav-btn.active { border-left-color: var(--accent); background: #f0fdf4; }
+.nav-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.nav-btn.active .nav-name { color: var(--accent-text); }
+.nav-meta { font-size: 11px; color: var(--ink3); font-weight: 300; }
+.nav-btn.active .nav-meta { color: var(--accent); }
+
+.content { padding: 2.5rem 2.5rem 5rem; max-width: 760px; }
+
+.panel { display: none; }
+.panel.active { display: block; animation: up 0.2s ease; }
+@keyframes up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+.pep-header { margin-bottom: 2.5rem; }
+.pep-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.pep-name em { font-style: italic; color: var(--ink3); font-size: 20px; }
+.pep-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.tag-dark { background: var(--ink); color: #fff; }
+.tag-green { background: var(--accent); color: #fff; }
+
+.section { margin-bottom: 2.25rem; }
+.section-title {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* RECON */
+.recon-card {
+  background: var(--ink);
+  border-radius: var(--r-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.recon-pill { display: flex; flex-direction: column; gap: 3px; }
+.recon-amt { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: #fff; line-height: 1; }
+.recon-lbl { font-size: 10px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; text-transform: uppercase; }
+.recon-div { width: 1px; height: 36px; background: rgba(255,255,255,0.12); }
+.recon-note { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.55; flex: 1; min-width: 160px; }
+
+/* SCHEDULE META */
+.sched-grid { display: grid; gap: 6px; margin-top: 10px; }
+.sched-row { display: grid; grid-template-columns: 110px 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.sched-k { padding: 0.6rem 0.9rem; font-size: 10px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink3); background: var(--paper); border-right: 1px solid var(--border); display: flex; align-items: center; }
+.sched-v { padding: 0.6rem 0.9rem; font-size: 13px; color: var(--ink); display: flex; align-items: center; }
+
+/* DOSE TABLE */
+.dose-table { width: 100%; border-collapse: collapse; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--border); }
+.dose-table thead tr { background: var(--ink); }
+.dose-table th { padding: 0.6rem 1rem; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.7); text-align: left; }
+.dose-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.dose-table tbody tr:last-child { border-bottom: none; }
+.dose-table tbody tr:hover { background: #fafaf9; }
+.dose-table tbody tr.hi { background: #f0fdf4; }
+.dose-table tbody tr.hi:hover { background: #dcfce7; }
+.dose-table td { padding: 0.6rem 1rem; font-size: 13px; color: var(--ink2); vertical-align: middle; }
+.dose-table td:first-child { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--ink); }
+.dose-table td.u { font-family: 'DM Mono', monospace; color: var(--accent); font-weight: 500; }
+.badge {
+  display: inline-block; font-size: 9px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-left: 6px; vertical-align: middle;
+}
+.badge-go { background: var(--accent); color: #fff; }
+.badge-end { background: var(--ink2); color: #fff; }
+.badge-warn { background: var(--warn); color: #fff; }
+
+/* CHIPS */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid;
+}
+.chip-red { background: #fef2f2; color: #991b1b; border-color: rgba(190,18,60,0.18); }
+.chip-amber { background: var(--warn-light); color: var(--warn-text); border-color: rgba(180,83,9,0.18); }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.chip-red .dot { background: #dc2626; }
+.chip-amber .dot { background: var(--warn); }
+.iact-note { margin-top: 10px; font-size: 12px; color: var(--ink3); padding: 8px 12px; border-left: 3px solid var(--border2); line-height: 1.55; }
+
+/* PROTO TABS */
+.proto-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+.proto-btn {
+  font-size: 12px; font-weight: 500; padding: 5px 13px; border-radius: 20px;
+  border: 1px solid var(--border2); background: none; color: var(--ink2); cursor: pointer; transition: all 0.12s;
+}
+.proto-btn:hover { background: var(--paper); }
+.proto-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.proto-panel { display: none; }
+.proto-panel.active { display: block; }
+
+/* NOTICE BOXES */
+.notice {
+  border-radius: var(--r); padding: 0.75rem 1rem; font-size: 13px; margin-bottom: 12px; border: 1px solid;
+}
+.notice-green { background: var(--accent-light); color: var(--accent-text); border-color: rgba(45,106,79,0.2); }
+.notice-amber { background: var(--warn-light); color: var(--warn-text); border-color: rgba(180,83,9,0.2); }
+.notice-red { background: #fef2f2; color: #991b1b; border-color: rgba(190,18,60,0.2); }
+
+/* CKD note */
+.ckd-box { background: var(--warn-light); border: 1px solid rgba(180,83,9,0.2); border-radius: var(--r-lg); padding: 1.25rem 1.5rem; margin-top: 10px; }
+.ckd-box-title { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--warn); margin-bottom: 8px; }
+.ckd-box p { font-size: 12px; color: var(--warn-text); line-height: 1.6; margin-bottom: 6px; }
+.ckd-box p:last-child { margin-bottom: 0; }
+
+/* MOBILE */
+.mob-nav { display: none; flex-wrap: wrap; gap: 6px; padding: 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+.mob-btn { font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border2); background: none; color: var(--ink2); cursor: pointer; }
+.mob-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+@media (max-width: 640px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .mob-nav { display: flex; }
+  .content { padding: 1.5rem 1rem 4rem; }
+  .pep-name { font-size: 28px; }
+  .sched-row { grid-template-columns: 90px 1fr; }
+  .recon-card { gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">Peptide Reference</div>
+  <div class="header-sub">Research use only · Not for human use without licensed medical supervision</div>
+</div>
+
+<div class="mob-nav" id="mobNav"></div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-label" style="margin-bottom:10px;">Compounds</div>
+    <button class="nav-btn active" onclick="show('sema',this)"><span class="nav-name">Semaglutide</span><span class="nav-meta">10 mg · weekly</span></button>
+    <button class="nav-btn" onclick="show('ss31',this)"><span class="nav-name">SS-31</span><span class="nav-meta">10 mg · daily</span></button>
+    <button class="nav-btn" onclick="show('ara',this)"><span class="nav-name">ARA-290</span><span class="nav-meta">16 mg · daily</span></button>
+    <button class="nav-btn" onclick="show('reta',this)"><span class="nav-name">Retatrutide</span><span class="nav-meta">10 mg · weekly</span></button>
+    <button class="nav-btn" onclick="show('tirz',this)"><span class="nav-name">Tirzepatide</span><span class="nav-meta">30 mg · weekly</span></button>
+    <button class="nav-btn" onclick="show('ghk',this)"><span class="nav-name">GHK-Cu</span><span class="nav-meta">100 mg · daily</span></button>
+    <button class="nav-btn" onclick="show('mots',this)"><span class="nav-name">MOTS-C</span><span class="nav-meta">10 mg · every 3–5 days</span></button>
+    <button class="nav-btn" onclick="show('snap',this)"><span class="nav-name">Snap-8</span><span class="nav-meta">10 mg · topical</span></button>
+  </nav>
+
+  <main class="content">
+
+    <!-- SEMAGLUTIDE -->
+    <div class="panel active" id="tab-sema">
+      <div class="pep-header">
+        <div class="pep-name">Semaglutide <em>10 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-dark">Once weekly</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="recon-card">
+          <div class="recon-pill"><div class="recon-amt">10 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">2 mL</div><div class="recon-lbl">BAC water · 200 units</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-note">1 unit = 0.05 mg · Gently roll to mix, do not shake · Store refrigerated after reconstitution</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule — 10 mg Vial</div>
+        <table class="dose-table">
+          <thead><tr><th>Dose</th><th>Units</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>0.25 mg</td><td class="u">5 u</td><td>Weeks 1–4 <span class="badge badge-go">Start</span></td></tr>
+            <tr><td>0.50 mg</td><td class="u">10 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>0.75 mg</td><td class="u">15 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>1.00 mg</td><td class="u">20 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>1.25 mg</td><td class="u">25 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>1.50 mg</td><td class="u">30 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>1.75 mg</td><td class="u">35 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>2.00 mg</td><td class="u">40 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>2.25 mg</td><td class="u">45 u</td><td>Hold ≥4 weeks before increasing</td></tr>
+            <tr><td>2.50 mg</td><td class="u">50 u</td><td>Maximum dose <span class="badge badge-end">Max</span></td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Once weekly — same day each week</div></div>
+          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">Any time. If side-effect prone, dose before bedtime.</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Other GLP-1 peptides</div>
+          <div class="chip chip-red"><span class="dot"></span>Tirzepatide</div>
+          <div class="chip chip-red"><span class="dot"></span>Retatrutide</div>
+          <div class="chip chip-red"><span class="dot"></span>Insulin</div>
+          <div class="chip chip-red"><span class="dot"></span>Sulfonylureas</div>
+          <div class="chip chip-red"><span class="dot"></span>Pregnant / breastfeeding</div>
+          <div class="chip chip-red"><span class="dot"></span>Thyroid disease / MEN 2</div>
+          <div class="chip chip-red"><span class="dot"></span>Gallbladder disease / pancreatitis</div>
+          <div class="chip chip-amber"><span class="dot"></span>Oral medications (delayed absorption)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Oral contraceptives</div>
+          <div class="chip chip-amber"><span class="dot"></span>Thyroid medications (levothyroxine)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SS-31 -->
+    <div class="panel" id="tab-ss31">
+      <div class="pep-header">
+        <div class="pep-name">SS-31 <em>10 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-dark">Daily · Fasted AM</span></div>
+      </div>
+      <div class="notice notice-amber"><strong>10 mg vial:</strong> Intended as a MOTS-C pre-load only (10–14 days before starting MOTS-C). For extended standalone use, 30 mg or 50 mg vials are needed.</div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="recon-card">
+          <div class="recon-pill"><div class="recon-amt">10 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">1 mL</div><div class="recon-lbl">BAC water · 100 units</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-note">1 unit = 0.1 mg · Take fasted in the AM at a consistent time each day</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule — 10 mg Vial (MOTS-C Pre-load)</div>
+        <table class="dose-table">
+          <thead><tr><th>Phase</th><th>Units</th><th>Dose · Frequency</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>Days 1–14</td><td class="u">10 u</td><td>1 mg · once daily <span class="badge badge-go">Pre-load</span></td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">After</div><div class="sched-v">Begin MOTS-C immediately after completing this 10–14 day pre-load</div></div>
+          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">Morning, fasted, same time daily</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">30 mg Vial Protocols (Reference for Future Use)</div>
+        <div class="recon-card" style="margin-bottom:10px;padding:0.9rem 1.25rem;">
+          <div class="recon-pill"><div class="recon-amt">30 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">2 mL</div><div class="recon-lbl">BAC water · 200 units</div></div>
+        </div>
+        <div class="proto-tabs">
+          <button class="proto-btn active" onclick="showProto('ss31','low',this)">Low dose</button>
+          <button class="proto-btn" onclick="showProto('ss31','std',this)">Standard</button>
+          <button class="proto-btn" onclick="showProto('ss31','max',this)">Maximum</button>
+        </div>
+        <div class="proto-panel active" id="ss31-low">
+          <table class="dose-table">
+            <thead><tr><th>Phase</th><th>Units</th><th>Dose · Frequency</th></tr></thead>
+            <tbody>
+              <tr class="hi"><td>Week 1</td><td class="u">7 u</td><td>1 mg · 1x/day · 5 days/week <span class="badge badge-go">Start</span></td></tr>
+              <tr><td>Weeks 2–5</td><td class="u">14 u</td><td>2 mg · 1x/day · 5 days/week</td></tr>
+              <tr><td>Weeks 6–8</td><td class="u">21 u</td><td>3 mg · 1x/day · 3 days/week</td></tr>
+              <tr><td>Weeks 9–12</td><td class="u">28 u</td><td>4 mg · 1x/day · 3 days/week <span class="badge badge-end">End</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="proto-panel" id="ss31-std">
+          <table class="dose-table">
+            <thead><tr><th>Phase</th><th>Units</th><th>Dose · Frequency</th></tr></thead>
+            <tbody>
+              <tr class="hi"><td>Weeks 1–12</td><td class="u">33 u</td><td>5 mg · 3–7 days/week · 8–12 weeks</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="proto-panel" id="ss31-max">
+          <table class="dose-table">
+            <thead><tr><th>Phase</th><th>Units</th><th>Dose · Frequency</th></tr></thead>
+            <tbody>
+              <tr class="hi"><td>Week 1</td><td class="u">10 u</td><td>1.5 mg · 1x/day · 5 days/week <span class="badge badge-go">Start</span></td></tr>
+              <tr><td>Weeks 2–5</td><td class="u">20 u</td><td>3 mg · 1x/day · 5 days/week</td></tr>
+              <tr><td>Weeks 6–8</td><td class="u">30 u</td><td>4.5 mg · 1x/day · 3 days/week</td></tr>
+              <tr><td>Weeks 9–12</td><td class="u">40 u</td><td>6 mg · 1x/day · 3 days/week <span class="badge badge-end">End</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Cycle</div><div class="sched-v">8–12 weeks on · 4–8 week washout</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Pregnant or breastfeeding</div>
+          <div class="chip chip-red"><span class="dot"></span>Hypersensitivity to mitochondrial compounds</div>
+        </div>
+        <div class="iact-note">No significant known drug-drug interactions. Monitor for injection site reactions. Signs of allergic reaction: fast/erratic heartbeat, shortness of breath, severe weakness, high fever with stiff muscles.</div>
+      </div>
+    </div>
+
+    <!-- ARA-290 -->
+    <div class="panel" id="tab-ara">
+      <div class="pep-header">
+        <div class="pep-name">ARA-290 <em>16 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-dark">Once daily</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="proto-tabs">
+          <button class="proto-btn active" onclick="showProto('ara','std',this)">Standard</button>
+          <button class="proto-btn" onclick="showProto('ara','max',this)">Maximum (≤4 wks only)</button>
+        </div>
+        <div class="proto-panel active" id="ara-std">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">16 mg</div><div class="recon-lbl">peptide</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-pill"><div class="recon-amt">1.5 mL</div><div class="recon-lbl">BAC water · 150 units</div></div>
+          </div>
+        </div>
+        <div class="proto-panel" id="ara-max">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">16 mg</div><div class="recon-lbl">peptide</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-pill"><div class="recon-amt">1 mL</div><div class="recon-lbl">BAC water · 100 units</div></div>
+            <div class="recon-note" style="color:rgba(255,190,80,0.9);">Maximum protocol only — absolute limit of 4 weeks. Do not exceed.</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule</div>
+        <table class="dose-table">
+          <thead><tr><th>Dose</th><th>Units (Std recon)</th><th>Protocol</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>2 mg</td><td class="u">18 u</td><td>Standard low — start here <span class="badge badge-go">Start</span></td></tr>
+            <tr><td>3 mg</td><td class="u">28 u</td><td>Standard mid</td></tr>
+            <tr><td>4 mg</td><td class="u">38 u</td><td>Standard high</td></tr>
+            <tr><td>8 mg</td><td class="u">75 u</td><td>Maximum — use max recon — 4 weeks only <span class="badge badge-warn">Max</span></td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Once daily</div></div>
+          <div class="sched-row"><div class="sched-k">Cycle</div><div class="sched-v">4, 8, or 12 weeks on</div></div>
+          <div class="sched-row"><div class="sched-k">Washout</div><div class="sched-v">2, 4, or 6 weeks off</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Pregnant or breastfeeding</div>
+          <div class="chip chip-red"><span class="dot"></span>Active malignancy</div>
+          <div class="chip chip-red"><span class="dot"></span>Uncontrolled cardiovascular disease</div>
+          <div class="chip chip-red"><span class="dot"></span>High thrombosis risk</div>
+          <div class="chip chip-amber"><span class="dot"></span>Strong immunosuppressants / biologics</div>
+          <div class="chip chip-amber"><span class="dot"></span>Anticoagulants / antiplatelets</div>
+          <div class="chip chip-amber"><span class="dot"></span>Antidiabetics (hypoglycemia risk)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Angiogenic agents</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RETATRUTIDE -->
+    <div class="panel" id="tab-reta">
+      <div class="pep-header">
+        <div class="pep-name">Retatrutide <em>10 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-dark">Once weekly</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="recon-card">
+          <div class="recon-pill"><div class="recon-amt">10 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">1 mL</div><div class="recon-lbl">BAC water · 100 units</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-note">1 unit = 0.1 mg · Do not microdose or split-dose — under-activates glucagon receptor, reduces efficacy, worsens side effects</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule — 10 mg Vial</div>
+        <table class="dose-table">
+          <thead><tr><th>Dose</th><th>Units</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>2 mg</td><td class="u">20 u</td><td>Start — hold minimum 4 weeks <span class="badge badge-go">Start</span></td></tr>
+            <tr><td>4 mg</td><td class="u">40 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>6 mg</td><td class="u">60 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>8 mg</td><td class="u">80 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>10 mg</td><td class="u">100 u</td><td>Maximum for this vial size <span class="badge badge-end">Max</span></td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Once every 7 days — same day, same time</div></div>
+          <div class="sched-row"><div class="sched-k">Cycle</div><div class="sched-v">16 weeks on · minimum 8-week washout</div></div>
+          <div class="sched-row"><div class="sched-k">With food</div><div class="sched-v">Light meal preferred. No large meals or alcohol around dose time.</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Other GLP-1 peptides</div>
+          <div class="chip chip-red"><span class="dot"></span>Semaglutide / Tirzepatide</div>
+          <div class="chip chip-red"><span class="dot"></span>Tesamorelin</div>
+          <div class="chip chip-red"><span class="dot"></span>IGF-1 LR3 / IGF-1 DES</div>
+          <div class="chip chip-red"><span class="dot"></span>GHRP-2 / GHRP-6</div>
+          <div class="chip chip-red"><span class="dot"></span>Insulin / secretagogues</div>
+          <div class="chip chip-red"><span class="dot"></span>Pregnant or nursing</div>
+          <div class="chip chip-red"><span class="dot"></span>Advanced liver disease</div>
+          <div class="chip chip-red"><span class="dot"></span>Severe GI disorders (Crohn's / IBD)</div>
+          <div class="chip chip-red"><span class="dot"></span>Thyroid cancer history</div>
+          <div class="chip chip-amber"><span class="dot"></span>CJC with DAC (blunts GLP benefit)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Oral medications (delayed absorption)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Sulfonylureas</div>
+        </div>
+        <div class="iact-note">CKD listed as original contraindication — see research note below.</div>
+        <div class="ckd-box">
+          <div class="ckd-box-title">⚠ CKD Research Update — 2025</div>
+          <p>The original "no CKD" contraindication is being actively re-evaluated. Two 2025 studies (Heerspink et al., <em>Kidney Int Reports</em>; TRANSCEND-CKD trial, <em>Nephrol Dial Transplant</em>) found Retatrutide at higher doses (8–12 mg) reduced albuminuria by 28–37% vs. placebo and preserved or improved eGFR in T2D and obesity populations.</p>
+          <p>The TRANSCEND-CKD trial (NCT05936151) specifically enrolled CKD patients with eGFR 25–75 ml/min/1.73 m² — which includes Stage 3b. Results pending. The large outcomes trial TRIUMPH-Outcomes (NCT06383390) completes ~2029.</p>
+          <p><strong>For CKD patients:</strong> Physician and ideally nephrologist supervision is essential before starting. Regular eGFR monitoring required. An initial eGFR dip at ~week 12 is expected and documented — it typically reverses by week 24.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIRZEPATIDE -->
+    <div class="panel" id="tab-tirz">
+      <div class="pep-header">
+        <div class="pep-name">Tirzepatide <em>30 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-dark">Once weekly</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="recon-card">
+          <div class="recon-pill"><div class="recon-amt">30 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">1.5 mL</div><div class="recon-lbl">BAC water · 150 units</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule — 30 mg Vial</div>
+        <table class="dose-table">
+          <thead><tr><th>Dose</th><th>Units</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>2.5 mg</td><td class="u">12 u</td><td>GLP-naive start — hold ≥4 weeks <span class="badge badge-go">Naive</span></td></tr>
+            <tr class="hi"><td>5.0 mg</td><td class="u">25 u</td><td>Prior GLP use start — hold ≥4 weeks <span class="badge badge-go">Prior GLP</span></td></tr>
+            <tr><td>7.5 mg</td><td class="u">36 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>10.0 mg</td><td class="u">50 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>12.5 mg</td><td class="u">62 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>15.0 mg</td><td class="u">75 u</td><td>Maximum dose <span class="badge badge-end">Max</span></td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Once weekly — same day every week</div></div>
+          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">Any time of day. Fasted state not required.</div></div>
+          <div class="sched-row"><div class="sched-k">Surgery ⚠</div><div class="sched-v">Always disclose to surgical team — pulmonary aspiration risk under anesthesia.</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Other GLP-1 peptides</div>
+          <div class="chip chip-red"><span class="dot"></span>Semaglutide / Retatrutide</div>
+          <div class="chip chip-red"><span class="dot"></span>Tesamorelin</div>
+          <div class="chip chip-red"><span class="dot"></span>IGF-1 LR3 / IGF-1 DES</div>
+          <div class="chip chip-red"><span class="dot"></span>GHRP-2 / GHRP-6 / Hexarelin</div>
+          <div class="chip chip-red"><span class="dot"></span>Insulin / sulfonylureas</div>
+          <div class="chip chip-red"><span class="dot"></span>Pregnant or breastfeeding</div>
+          <div class="chip chip-red"><span class="dot"></span>Medullary Thyroid Ca history / MEN 2</div>
+          <div class="chip chip-red"><span class="dot"></span>Type 1 diabetes / diabetic retinopathy</div>
+          <div class="chip chip-amber"><span class="dot"></span>CJC with DAC (blunts GLP benefit)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Oral contraceptives</div>
+          <div class="chip chip-amber"><span class="dot"></span>Berberine / Metformin</div>
+          <div class="chip chip-amber"><span class="dot"></span>Appetite suppressants / stimulants</div>
+          <div class="chip chip-amber"><span class="dot"></span>Alcohol</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GHK-CU -->
+    <div class="panel" id="tab-ghk">
+      <div class="pep-header">
+        <div class="pep-name">GHK-Cu <em>100 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-green">or Topical</span><span class="tag tag-dark">Daily</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="proto-tabs">
+          <button class="proto-btn active" onclick="showProto('ghk','i3',this)">Injectable · 3 mL vial</button>
+          <button class="proto-btn" onclick="showProto('ghk','i5',this)">Injectable · 5 mL vial</button>
+          <button class="proto-btn" onclick="showProto('ghk','top',this)">Topical</button>
+        </div>
+        <div class="proto-panel active" id="ghk-i3">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">100 mg</div><div class="recon-lbl">peptide</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-pill"><div class="recon-amt">2.5 mL</div><div class="recon-lbl">BAC water · 250 units</div></div>
+          </div>
+        </div>
+        <div class="proto-panel" id="ghk-i5">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">100 mg</div><div class="recon-lbl">peptide</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-pill"><div class="recon-amt">5 mL</div><div class="recon-lbl">BAC water · 500 units</div></div>
+          </div>
+        </div>
+        <div class="proto-panel" id="ghk-top">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">0.5 mL</div><div class="recon-lbl">BAC water to vial</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-note">Mix to smooth sludge. Transfer into 0.5–1 oz thick moisturizer or cream. Apply thin layer under a secondary moisturizer.</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule</div>
+        <table class="dose-table">
+          <thead><tr><th>Dose</th><th>Units (3 mL)</th><th>Units (5 mL)</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>1 mg/day</td><td class="u">3 u</td><td class="u">5 u</td></tr>
+            <tr><td>2 mg/day</td><td class="u">6 u</td><td class="u">10 u</td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Daily · 7 days/week. Start lowest dose, increase gradually to sustain benefits.</div></div>
+          <div class="sched-row"><div class="sched-k">Cycle</div><div class="sched-v">4–6 weeks on · 4–6 weeks washout</div></div>
+          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">Night preferred. Fasted state not required.</div></div>
+          <div class="sched-row"><div class="sched-k">Rotation ⚠</div><div class="sched-v">Never inject the same site twice in a row. Add 30–90 extra units water to syringe to dilute and reduce injection site reactions.</div></div>
+          <div class="sched-row"><div class="sched-k">Topical</div><div class="sched-v">Apply morning and evening to target area.</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With (Topical)</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Retinoids / Vitamin A</div>
+          <div class="chip chip-red"><span class="dot"></span>AHAs (glycolic, lactic acid)</div>
+          <div class="chip chip-red"><span class="dot"></span>BHAs (salicylic acid)</div>
+          <div class="chip chip-red"><span class="dot"></span>Vitamin C (L-ascorbic acid)</div>
+          <div class="chip chip-amber"><span class="dot"></span>High pH products</div>
+        </div>
+        <div class="iact-note">Injectable: no significant drug-drug interactions. Monitor for copper toxicity: headache, fever, nausea, vomiting, jaundice, brown rings in eyes. Do not exceed recommended doses.</div>
+      </div>
+    </div>
+
+    <!-- MOTS-C -->
+    <div class="panel" id="tab-mots">
+      <div class="pep-header">
+        <div class="pep-name">MOTS-C <em>10 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">SubQ injection</span><span class="tag tag-dark">Every 3–5 days · Fasted AM</span></div>
+      </div>
+      <div class="notice notice-green"><strong>Run SS-31 first:</strong> Complete 10–14 days of SS-31 (10 units/day) before beginning this cycle. SS-31 primes the mitochondria for MOTS-C's mechanism of action.</div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="recon-card">
+          <div class="recon-pill"><div class="recon-amt">10 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">1 mL</div><div class="recon-lbl">BAC water · 100 units</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-note">1 unit = 0.1 mg (same ratio regardless of vial size)</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Dosing Schedule</div>
+        <div class="proto-tabs">
+          <button class="proto-btn active" onclick="showProto('mots','p1',this)">Protocol 1 — every 5 days</button>
+          <button class="proto-btn" onclick="showProto('mots','p2',this)">Protocol 2 — every 3 days</button>
+        </div>
+        <div class="proto-panel active" id="mots-p1">
+          <table class="dose-table">
+            <thead><tr><th>Dose</th><th>Units</th><th>Frequency · Duration</th></tr></thead>
+            <tbody>
+              <tr class="hi"><td>5 mg</td><td class="u">50 u</td><td>Once every 5 days · 40–80 days total</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="proto-panel" id="mots-p2">
+          <table class="dose-table">
+            <thead><tr><th>Dose</th><th>Units</th><th>Frequency · Duration</th></tr></thead>
+            <tbody>
+              <tr class="hi"><td>3 mg</td><td class="u">30 u</td><td>Once every 3 days · 8–10 weeks total</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">First thing in the morning, empty stomach — or 30–60 min before exercise while fasted</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Pregnant or breastfeeding</div>
+          <div class="chip chip-red"><span class="dot"></span>Children or adolescents</div>
+          <div class="chip chip-amber"><span class="dot"></span>Extremely high doses (oxidative stress)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Prolonged unbroken use (cortisol / thyroid disruption)</div>
+        </div>
+        <div class="iact-note">No significant drug-drug interactions reported. Monitor for fatigue or cramping during early adaptive phase.</div>
+      </div>
+    </div>
+
+    <!-- SNAP-8 -->
+    <div class="panel" id="tab-snap">
+      <div class="pep-header">
+        <div class="pep-name">Snap-8 <em>10 mg</em></div>
+        <div class="pep-tags"><span class="tag tag-green">Topical only — no injection</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Reconstitution</div>
+        <div class="recon-card">
+          <div class="recon-pill"><div class="recon-amt">10 mg</div><div class="recon-lbl">peptide</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-pill"><div class="recon-amt">30–50 u</div><div class="recon-lbl">BAC water (0.3–0.5 mL)</div></div>
+          <div class="recon-div"></div>
+          <div class="recon-note">Let sit 10–20 min to fully dissolve. Add entire vial to max 1 oz skincare base. Or remove cap and pour directly into product.</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Application Schedule</div>
+        <table class="dose-table">
+          <thead><tr><th>Time</th><th>Frequency</th><th>Target Areas</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>Morning</td><td class="u">1×</td><td>Expression lines — eyes, mouth, forehead</td></tr>
+            <tr><td>Evening</td><td class="u">1×</td><td>Expression lines — eyes, mouth, forehead</td></tr>
+          </tbody>
+        </table>
+        <div class="sched-grid">
+          <div class="sched-row"><div class="sched-k">Results</div><div class="sched-v">Clinical trials: avg 30–68% wrinkle reduction after 1 month of twice-daily use</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Do Not Combine With</div>
+        <div class="chip-grid">
+          <div class="chip chip-red"><span class="dot"></span>Strong AHAs (glycolic, lactic)</div>
+          <div class="chip chip-red"><span class="dot"></span>Strong BHAs (salicylic)</div>
+          <div class="chip chip-red"><span class="dot"></span>High pH products</div>
+          <div class="chip chip-red"><span class="dot"></span>Vitamin A / Retinoids (high concentration)</div>
+          <div class="chip chip-amber"><span class="dot"></span>Vitamin C — patch test first</div>
+          <div class="chip chip-amber"><span class="dot"></span>Retinol (lower strength) — patch test first</div>
+        </div>
+        <div class="iact-note">No systemic interactions — topical only. Mild skin irritation possible, especially at higher concentrations or when combined with Retinoids or Vitamin C.</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const peptides = [
+  {id:'sema',name:'Semaglutide'},{id:'ss31',name:'SS-31'},{id:'ara',name:'ARA-290'},
+  {id:'reta',name:'Retatrutide'},{id:'tirz',name:'Tirzepatide'},{id:'ghk',name:'GHK-Cu'},
+  {id:'mots',name:'MOTS-C'},{id:'snap',name:'Snap-8'}
+];
+
+const mobNav = document.getElementById('mobNav');
+peptides.forEach((p,i) => {
+  const b = document.createElement('button');
+  b.className = 'mob-btn' + (i===0?' active':'');
+  b.textContent = p.name;
+  b.onclick = () => show(p.id, b);
+  mobNav.appendChild(b);
+});
+
+function show(id, clicked) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn, .mob-btn').forEach(b => b.classList.remove('active'));
+  const match = peptides.find(p => p.id === id);
+  if (!match) return;
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.querySelector('.nav-name')?.textContent === match.name) b.classList.add('active');
+  });
+  document.querySelectorAll('.mob-btn').forEach(b => {
+    if (b.textContent === match.name) b.classList.add('active');
+  });
+}
+
+function showProto(ns, key, btn) {
+  const sec = btn.closest('.section, .pep-header') || btn.parentElement.parentElement;
+  btn.closest('.proto-tabs').querySelectorAll('.proto-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const panels = btn.closest('.section')?.querySelectorAll('.proto-panel') ||
+                 btn.parentElement.parentElement.querySelectorAll('.proto-panel');
+  panels.forEach(p => p.classList.remove('active'));
+  document.getElementById(ns+'-'+key).classList.add('active');
+}
+</script>
+</body>
+</html>
