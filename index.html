@@ -247,7 +247,7 @@ body {
 
 <div class="header">
   <div class="header-title">Peptide Reference</div>
-  <div class="header-sub">Research use only · Not for human use without licensed medical supervision</div>
+  <div class="header-sub">Reconstitution and Dosing Schedules</div>
 </div>
 
 <div class="mob-nav" id="mobNav"></div>
@@ -263,6 +263,9 @@ body {
     <button class="nav-btn" onclick="show('ghk',this)"><span class="nav-name">GHK-Cu</span><span class="nav-meta">100 mg · daily</span></button>
     <button class="nav-btn" onclick="show('mots',this)"><span class="nav-name">MOTS-C</span><span class="nav-meta">10 mg · every 3–5 days</span></button>
     <button class="nav-btn" onclick="show('snap',this)"><span class="nav-name">Snap-8</span><span class="nav-meta">10 mg · topical</span></button>
+    <div style="height:1px;background:var(--border);margin:10px 0;"></div>
+    <div class="sidebar-label" style="margin-bottom:10px;">Tools</div>
+    <button class="nav-btn" onclick="show('switch',this)"><span class="nav-name">Switch Chart</span><span class="nav-meta">GLP-1 transfer doses</span></button>
   </nav>
 
   <main class="content">
@@ -747,6 +750,64 @@ body {
       </div>
     </div>
 
+    <!-- SWITCH CHART -->
+    <div class="panel" id="tab-switch">
+      <div class="pep-header">
+        <div class="pep-name">Switch Chart <em>GLP-1 transfer doses</em></div>
+        <div class="pep-tags"><span class="tag tag-dark">Semaglutide</span><span class="tag tag-dark">Tirzepatide</span><span class="tag tag-dark">Retatrutide</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Current peptide & dose</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;">
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);">Switching from</div>
+            <select id="sw-from-pep" onchange="swPopDoses();swUpdate();" style="font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--ink);cursor:pointer;">
+              <option value="sema">Semaglutide (10 mg vial)</option>
+              <option value="tirz">Tirzepatide (30 mg vial)</option>
+              <option value="reta">Retatrutide (10 mg vial)</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);">Current dose</div>
+            <select id="sw-from-dose" onchange="swUpdate();" style="font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--ink);cursor:pointer;"></select>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;border-radius:var(--r-lg);padding:1rem 1.25rem;border:1px solid var(--border2);background:var(--surface);">
+            <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink3);" id="sw-from-pep-label">—</div>
+            <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--ink);line-height:1.2;margin-top:3px;" id="sw-from-dose-label">—</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px;" id="sw-from-units-label">—</div>
+          </div>
+          <div style="font-size:22px;color:var(--ink3);flex-shrink:0;">&#8594;</div>
+          <div style="flex:1;min-width:140px;border-radius:var(--r-lg);padding:1rem 1.25rem;border:1px solid var(--border);background:var(--paper);">
+            <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink3);">Transfer to</div>
+            <div style="font-size:13px;color:var(--ink2);margin-top:3px;line-height:1.4;">See table below for each target peptide</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Transfer equivalents</div>
+        <table class="dose-table" style="table-layout:fixed;width:100%;">
+          <thead><tr>
+            <th style="width:28%;">Target peptide</th>
+            <th style="width:18%;">Starting dose</th>
+            <th style="width:12%;">Units</th>
+            <th style="width:20%;">Vial / recon</th>
+            <th style="width:22%;">Rationale</th>
+          </tr></thead>
+          <tbody id="sw-result-body"></tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Protocol notes</div>
+        <div id="sw-warn-area"></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -754,7 +815,7 @@ body {
 const peptides = [
   {id:'sema',name:'Semaglutide'},{id:'ss31',name:'SS-31'},{id:'ara',name:'ARA-290'},
   {id:'reta',name:'Retatrutide'},{id:'tirz',name:'Tirzepatide'},{id:'ghk',name:'GHK-Cu'},
-  {id:'mots',name:'MOTS-C'},{id:'snap',name:'Snap-8'}
+  {id:'mots',name:'MOTS-C'},{id:'snap',name:'Snap-8'},{id:'switch',name:'Switch Chart'}
 ];
 
 const mobNav = document.getElementById('mobNav');
@@ -789,6 +850,107 @@ function showProto(ns, key, btn) {
   panels.forEach(p => p.classList.remove('active'));
   document.getElementById(ns+'-'+key).classList.add('active');
 }
+
+const swPeptides = {
+  sema: { name:'Semaglutide', vial:'10 mg vial', recon:'2 mL / 200 u', mgPerUnit:0.05,
+    doses:[{mg:0.25,u:5},{mg:0.5,u:10},{mg:0.75,u:15},{mg:1.0,u:20},{mg:1.25,u:25},{mg:1.5,u:30},{mg:1.75,u:35},{mg:2.0,u:40},{mg:2.25,u:45},{mg:2.5,u:50}]},
+  tirz: { name:'Tirzepatide', vial:'30 mg vial', recon:'1.5 mL / 150 u', mgPerUnit:0.2,
+    doses:[{mg:2.5,u:12},{mg:5,u:25},{mg:7.5,u:36},{mg:10,u:50},{mg:12.5,u:62},{mg:15,u:75}]},
+  reta: { name:'Retatrutide', vial:'10 mg vial', recon:'1 mL / 100 u', mgPerUnit:0.1,
+    doses:[{mg:2,u:20},{mg:4,u:40},{mg:6,u:60},{mg:8,u:80},{mg:10,u:100}]}
+};
+
+const swMap = {
+  sema: {
+    tirz: mg => {
+      if (mg<=0.5)  return {mg:2.5, u:12,  rationale:'Drop to Tirz starter',       warn:'Despite prior Sema use, Tirzepatide adds GIP receptor. Start at 2.5 mg (12 u). If on Sema ≥1 month at starter dose, some providers allow 5 mg — consult before skipping.'};
+      if (mg<=1.0)  return {mg:5,   u:25,  rationale:'Prior GLP → Tirz 5 mg start', warn:'Prior GLP-1 experience supports 5 mg (25 u) start. Hold minimum 4 weeks before any increase.'};
+      if (mg<=1.5)  return {mg:5,   u:25,  rationale:'Mid Sema → Tirz 5 mg start',  warn:'Hold at 5 mg for 4 weeks minimum before increasing to 7.5 mg.'};
+      if (mg<=2.0)  return {mg:7.5, u:36,  rationale:'Higher Sema → Tirz 7.5 mg',   warn:'Hold at 7.5 mg for 4 weeks minimum. Max Tirzepatide is 15 mg (75 u).'};
+      return              {mg:10,  u:50,  rationale:'Near-max Sema → Tirz 10 mg',  warn:'Hold at 10 mg for 4 weeks. Max Tirzepatide is 15 mg (75 u).'};
+    },
+    reta: mg => ({mg:2, u:20, rationale:'Always start Reta at 2 mg', warn:'Retatrutide always starts at 2 mg (20 u) regardless of prior GLP-1 dose. The glucagon receptor is a new pathway — do not skip the escalation schedule. Hold 4 weeks minimum before increasing to 4 mg.'})
+  },
+  tirz: {
+    sema: mg => {
+      if (mg<=2.5)  return {mg:0.25, u:5,  rationale:'Tirz starter → Sema starter',  warn:'Switching to Sema from Tirz: start at 0.25 mg (5 u). Tirzepatide has GIP receptor activity Sema does not. Hold 4 weeks minimum.'};
+      if (mg<=5)    return {mg:0.5,  u:10, rationale:'Tirz 5 mg → Sema 0.5 mg',     warn:'Hold at 0.5 mg for 4 weeks. You will lose GIP receptor activity — some adjustment in appetite suppression expected.'};
+      if (mg<=7.5)  return {mg:0.75, u:15, rationale:'Tirz 7.5 mg → Sema 0.75 mg',  warn:'Hold at 0.75 mg for 4 weeks. Some adjustment expected moving from dual to single agonist.'};
+      if (mg<=10)   return {mg:1.0,  u:20, rationale:'Tirz 10 mg → Sema 1 mg',      warn:'Hold at 1.0 mg for 4 weeks minimum.'};
+      if (mg<=12.5) return {mg:1.5,  u:30, rationale:'Tirz 12.5 mg → Sema 1.5 mg',  warn:'Hold 4 weeks. Max Sema is 2.5 mg (50 u).'};
+      return               {mg:2.0,  u:40, rationale:'Max Tirz → Sema upper range',  warn:'Hold 4 weeks. Max Sema is 2.5 mg (50 u).'};
+    },
+    reta: mg => ({mg:2, u:20, rationale:'Always start Reta at 2 mg', warn:'Retatrutide always starts at 2 mg (20 u) even with significant Tirzepatide experience. Glucagon agonism requires its own full adaptation. Do not attempt to match your Tirz dose. Hold 4 weeks minimum before increasing.'})
+  },
+  reta: {
+    sema: mg => {
+      if (mg<=2)  return {mg:0.5,  u:10, rationale:'Reta starter → Sema 0.5 mg',   warn:'Prior GLP-1 experience supports starting Sema at 0.5 mg (10 u). Hold 4 weeks.'};
+      if (mg<=4)  return {mg:1.0,  u:20, rationale:'Reta 4 mg → Sema 1 mg',        warn:'Hold at 1.0 mg for 4 weeks. Sema is single agonist — some adjustment expected.'};
+      if (mg<=6)  return {mg:1.25, u:25, rationale:'Reta 6 mg → Sema 1.25 mg',     warn:'Hold 4 weeks minimum. Max Sema is 2.5 mg (50 u).'};
+      if (mg<=8)  return {mg:1.75, u:35, rationale:'Reta 8 mg → Sema 1.75 mg',     warn:'Hold 4 weeks. You will lose glucagon and GIP receptor activity on Sema.'};
+      return            {mg:2.0,  u:40, rationale:'Max Reta → Sema near-max',      warn:'Hold 4 weeks. Max Sema is 2.5 mg (50 u). Expect adjustment losing triple agonism.'};
+    },
+    tirz: mg => {
+      if (mg<=2)  return {mg:2.5,  u:12, rationale:'Reta starter → Tirz starter',  warn:'Prior GLP-1 experience. Tirz 2.5 mg (12 u) is appropriate starting point. Hold 4 weeks minimum.'};
+      if (mg<=4)  return {mg:5,    u:25, rationale:'Reta 4 mg → Tirz 5 mg',        warn:'Prior GLP-1 experience supports 5 mg start. Hold 4 weeks minimum.'};
+      if (mg<=6)  return {mg:7.5,  u:36, rationale:'Reta 6 mg → Tirz 7.5 mg',      warn:'Hold at 7.5 mg for 4 weeks. You lose glucagon receptor agonism moving to Tirz.'};
+      if (mg<=8)  return {mg:10,   u:50, rationale:'Reta 8 mg → Tirz 10 mg',       warn:'Hold 4 weeks. Max Tirzepatide is 15 mg (75 u).'};
+      return            {mg:12.5, u:62, rationale:'Max Reta → Tirz near-max',      warn:'Hold 4 weeks minimum. Max Tirzepatide is 15 mg (75 u).'};
+    }
+  }
+};
+
+function swPopDoses() {
+  const key = document.getElementById('sw-from-pep').value;
+  const sel = document.getElementById('sw-from-dose');
+  sel.innerHTML = '';
+  swPeptides[key].doses.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.mg;
+    o.textContent = d.mg + ' mg (' + d.u + ' units)';
+    sel.appendChild(o);
+  });
+}
+
+function swUpdate() {
+  const fromKey = document.getElementById('sw-from-pep').value;
+  const fromMg = parseFloat(document.getElementById('sw-from-dose').value);
+  const pep = swPeptides[fromKey];
+  const dose = pep.doses.find(d => d.mg === fromMg) || pep.doses[0];
+
+  document.getElementById('sw-from-pep-label').textContent = pep.name;
+  document.getElementById('sw-from-dose-label').textContent = fromMg + ' mg';
+  document.getElementById('sw-from-units-label').textContent = dose.u + ' units · ' + pep.vial;
+
+  const body = document.getElementById('sw-result-body');
+  body.innerHTML = '';
+  const warnArea = document.getElementById('sw-warn-area');
+  warnArea.innerHTML = '';
+
+  const targets = Object.keys(swPeptides).filter(k => k !== fromKey);
+  targets.forEach(toKey => {
+    const result = swMap[fromKey][toKey](fromMg);
+    const toPep = swPeptides[toKey];
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><strong style="font-weight:500;color:var(--ink);">' + toPep.name + '</strong><br><span style="font-size:11px;color:var(--ink3);">' + toPep.vial + '</span></td>' +
+      '<td style="font-family:\'DM Mono\',monospace;font-size:15px;font-weight:500;color:var(--ink);">' + result.mg + ' mg</td>' +
+      '<td style="font-family:\'DM Mono\',monospace;color:var(--accent);font-weight:500;font-size:13px;">' + result.u + ' u</td>' +
+      '<td style="font-size:11px;color:var(--ink3);">' + toPep.recon + '</td>' +
+      '<td style="font-size:12px;color:var(--ink2);line-height:1.4;">' + result.rationale + '</td>';
+    body.appendChild(tr);
+
+    if (result.warn) {
+      const div = document.createElement('div');
+      div.style.cssText = 'margin-bottom:8px;font-size:12px;color:var(--warn-text);padding:10px 14px;border-left:3px solid var(--warn);background:var(--warn-light);border-radius:0 var(--r) var(--r) 0;line-height:1.6;';
+      div.innerHTML = '<strong style="color:var(--ink);">' + toPep.name + ':</strong> ' + result.warn;
+      warnArea.appendChild(div);
+    }
+  });
+}
+
+swPopDoses();
+swUpdate();
 </script>
 </body>
 </html>
