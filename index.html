@@ -256,6 +256,10 @@ body {
 <div class="header">
   <div class="header-title">Peptide Reference</div>
   <div class="header-sub">Reconstitution and Dosing Schedules</div>
+  <button id="installBtn" onclick="triggerInstall()" style="display:none;margin-left:auto;align-items:center;gap:6px;background:var(--accent);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    Install App
+  </button>
 </div>
 
 <div class="mob-nav" id="mobNav"></div>
@@ -987,6 +991,50 @@ function swUpdate() {
 
 swPopDoses();
 swUpdate();
+
+// --- Service worker registration (enables "real" install / Add to Home Screen) ---
+// Registered from an inline blob so the whole app stays a single self-contained file.
+if ('serviceWorker' in navigator) {
+  const swSource = `
+    const CACHE = 'peptide-ref-v1';
+    self.addEventListener('install', e => { self.skipWaiting(); });
+    self.addEventListener('activate', e => { self.clients.claim(); });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.open(CACHE).then(cache =>
+          cache.match(e.request).then(cached => {
+            const fetchPromise = fetch(e.request).then(res => {
+              if (e.request.method === 'GET' && res && res.status === 200) {
+                cache.put(e.request, res.clone());
+              }
+              return res;
+            }).catch(() => cached);
+            return cached || fetchPromise;
+          })
+        )
+      );
+    });
+  `;
+  const swBlob = new Blob([swSource], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(swBlob);
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+// --- Optional custom "Install" button support ---
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'inline-flex';
+});
+function triggerInstall() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(() => { deferredInstallPrompt = null; });
+}
 </script>
 </body>
 </html>
