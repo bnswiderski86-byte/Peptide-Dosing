@@ -259,7 +259,7 @@ body {
     <button class="nav-btn" onclick="show('ss31',this)"><span class="nav-name">SS-31</span><span class="nav-meta">10 mg · daily</span></button>
     <button class="nav-btn" onclick="show('ara',this)"><span class="nav-name">ARA-290</span><span class="nav-meta">16 mg · daily</span></button>
     <button class="nav-btn" onclick="show('reta',this)"><span class="nav-name">Retatrutide</span><span class="nav-meta">10 mg · weekly</span></button>
-    <button class="nav-btn" onclick="show('tirz',this)"><span class="nav-name">Tirzepatide</span><span class="nav-meta">30 mg · weekly</span></button>
+    <button class="nav-btn" onclick="show('tirz',this)"><span class="nav-name">Tirzepatide</span><span class="nav-meta">30/60 mg · weekly</span></button>
     <button class="nav-btn" onclick="show('ghk',this)"><span class="nav-name">GHK-Cu</span><span class="nav-meta">100 mg · daily</span></button>
     <button class="nav-btn" onclick="show('mots',this)"><span class="nav-name">MOTS-C</span><span class="nav-meta">10 mg · every 3–5 days</span></button>
     <button class="nav-btn" onclick="show('snap',this)"><span class="nav-name">Snap-8</span><span class="nav-meta">10 mg · topical</span></button>
@@ -541,10 +541,23 @@ body {
       </div>
       <div class="section">
         <div class="section-title">Reconstitution</div>
-        <div class="recon-card">
-          <div class="recon-pill"><div class="recon-amt">30 mg</div><div class="recon-lbl">peptide</div></div>
-          <div class="recon-div"></div>
-          <div class="recon-pill"><div class="recon-amt">1.5 mL</div><div class="recon-lbl">BAC water · 150 units</div></div>
+        <div class="proto-tabs">
+          <button class="proto-btn active" onclick="showProto('tirz','30',this)">30 mg vial</button>
+          <button class="proto-btn" onclick="showProto('tirz','60',this)">60 mg vial</button>
+        </div>
+        <div class="proto-panel active" id="tirz-30">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">30 mg</div><div class="recon-lbl">peptide</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-pill"><div class="recon-amt">1.5 mL</div><div class="recon-lbl">BAC water · 150 units</div></div>
+          </div>
+        </div>
+        <div class="proto-panel" id="tirz-60">
+          <div class="recon-card">
+            <div class="recon-pill"><div class="recon-amt">60 mg</div><div class="recon-lbl">peptide</div></div>
+            <div class="recon-div"></div>
+            <div class="recon-pill"><div class="recon-amt">2.5 mL</div><div class="recon-lbl">BAC water · 250 units</div></div>
+          </div>
         </div>
       </div>
       <div class="section">
@@ -560,9 +573,24 @@ body {
             <tr><td>15.0 mg</td><td class="u">75 u</td><td>Maximum dose <span class="badge badge-end">Max</span></td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="section">
+        <div class="section-title">Subcutaneous Administration — 60 mg Vial</div>
+        <table class="dose-table">
+          <thead><tr><th>Dose</th><th>Units</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr class="hi"><td>2.5 mg</td><td class="u">10 u</td><td>Start — hold ≥4 weeks <span class="badge badge-go">Start</span></td></tr>
+            <tr><td>5.0 mg</td><td class="u">21 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>7.5 mg</td><td class="u">31 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>10.0 mg</td><td class="u">42 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>12.5 mg</td><td class="u">52 u</td><td>Hold minimum 4 weeks before increasing</td></tr>
+            <tr><td>15.0 mg</td><td class="u">62 u</td><td>Maximum dose <span class="badge badge-end">Max</span></td></tr>
+          </tbody>
+        </table>
         <div class="sched-grid">
-          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Once weekly — same day every week</div></div>
-          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">Any time of day. Fasted state not required.</div></div>
+          <div class="sched-row"><div class="sched-k">Frequency</div><div class="sched-v">Once per week (every 7 days) — always the same day of the week</div></div>
+          <div class="sched-row"><div class="sched-k">Dose hold</div><div class="sched-v">Remain on each dose a minimum of 4 weeks before moving to the next dose</div></div>
+          <div class="sched-row"><div class="sched-k">Timing</div><div class="sched-v">May be taken at any time of day or night. Fasted state not necessary.</div></div>
           <div class="sched-row"><div class="sched-k">Surgery ⚠</div><div class="sched-v">Always disclose to surgical team — pulmonary aspiration risk under anesthesia.</div></div>
         </div>
       </div>
